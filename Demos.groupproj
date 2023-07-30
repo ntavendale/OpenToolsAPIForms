@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{69137741-745A-4A53-A75B-787C0ACB5430}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="PublishedProperties\Package\OADemoPackage.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="PublishedProperties\DemoApp\PropertiesApp.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="OADemoPackage">
+        <MSBuild Projects="PublishedProperties\Package\OADemoPackage.dproj"/>
+    </Target>
+    <Target Name="OADemoPackage:Clean">
+        <MSBuild Projects="PublishedProperties\Package\OADemoPackage.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="OADemoPackage:Make">
+        <MSBuild Projects="PublishedProperties\Package\OADemoPackage.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="PropertiesApp">
+        <MSBuild Projects="PublishedProperties\DemoApp\PropertiesApp.dproj"/>
+    </Target>
+    <Target Name="PropertiesApp:Clean">
+        <MSBuild Projects="PublishedProperties\DemoApp\PropertiesApp.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="PropertiesApp:Make">
+        <MSBuild Projects="PublishedProperties\DemoApp\PropertiesApp.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="OADemoPackage;PropertiesApp"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="OADemoPackage:Clean;PropertiesApp:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="OADemoPackage:Make;PropertiesApp:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
