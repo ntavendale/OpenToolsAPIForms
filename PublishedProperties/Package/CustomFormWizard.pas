@@ -32,8 +32,9 @@ type
     function GetAge: TDateTime;
   end;
 
-  // We want our Own Gallery Category Called "Our Forms"
-  // Under Delphi in the File->New->Other
+  // We want our Own Gallery Category Called "Our Custom Forms"
+  // Under Delphi in the File->New->Other. To do this we implement
+  // IOTAGalleryCategory with the correct Parent Gallery.
   TCustomGalleryCategory = class(TInterfacedObject, IOTAGalleryCategory)
   public
     function GetDisplayName: string;
@@ -45,6 +46,9 @@ type
                                     IOTANotifier,
                                     IOTAWizard,
                                     IOTARepositoryWizard,
+                                    // IOTARepositoryWizard60 & IOTARepositoryWizard80
+                                    // *must both* be implemnted in later versions of Delphi
+                                    // that support multiple OS/Platforms.
                                     IOTARepositoryWizard60,
                                     IOTARepositoryWizard80,
                                     // IOTAFormWizard does nothing but must be present
@@ -107,6 +111,10 @@ type
 procedure AddCategory;
 procedure RemoveCategory;
 
+// There only neds to be ioone instance of our IOTAGalleryCategory category implemntation
+// so we use a global variable which we add and remove through the Gallery Manager.
+// We will add it at registrion time and remove it in the finalization (when IDE
+// Closes or pacjage is uninstalled)
 var
   FCategory: IOTAGalleryCategory = nil;
 
@@ -262,6 +270,10 @@ var
 begin
   (BorlandIDEServices as IOTAModuleServices).GetNewModuleAndClassName('fmMyCustomForm', LUnitIdent, LClassName, LFileName);
   OutputDebugString(PChar('GetNewModuleAndClassName: ModuleName: ' + LUnitIdent + ', FormName:' + LClassName + ', ' + 'FileName: ' + LFileName));
+
+  // It l;ooks like theres a bug in GetNewModuleAndClassName. It's supposed to
+  // fill in ClasName, FileName etc based on wht we feed it, but the strings
+  // come back empty. Add checking.
   if String.IsNullOrWhitespace(LUnitIdent) then
     LUnitIdent := String.Format('Unit%d', [(BorlandIDEServices as IOTAModuleServices).ModuleCount]);
   if String.IsNullOrWhitespace(LClassName) then
@@ -295,6 +307,7 @@ begin
   // Seems to be an issue with just implmenting IOTARepositoryWizard
   // GetPage is called but nothjing appears in the gallery.
   // Need to implement IOTARepositoryWizard60 & IOTARepositoryWizard80
+  // If IOTARepositoryWizard80 implemented this method should never run.
   OutputDebugString(PChar('Getting Page'));
   Result := String.Empty;
 end;
@@ -350,6 +363,9 @@ var
 begin
   Result := nil;
   ModServ := BorlandIDEServices as IOTAModuleServices;
+
+  // ModServ.ModuleCount is the total count of modules across the *entire* project gropup
+  // We need to fund the active project
   for i := 0 to ModServ.ModuleCount - 1 do
   begin
     Module := ModSErv.Modules[I];
@@ -357,6 +373,7 @@ begin
     if (0 = CompareText(ExtractFileExt(Module.FileName), '.bpg')) and (S_OK = Module.QueryInterface(IOTAProjectGroup, ProjGrp)) then
     begin
       // return active project of group
+      // which will be the owner of the newly created form
       Result := ProjGrp.GetActiveProject;
       Exit;
     end;

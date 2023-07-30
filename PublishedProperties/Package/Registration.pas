@@ -40,6 +40,7 @@ end;
 initialization
 
 finalization
+  // This code run when IDE Closes or package is uninstalled
   if iWizard > 0 Then
     (BorlandIDEServices As IOTAWizardServices).RemoveWizard(iWizard);
   if nil <> FCategory then

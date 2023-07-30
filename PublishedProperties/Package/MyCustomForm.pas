@@ -14,6 +14,8 @@ type
   public
     { Public declarations }
   published
+    // The publised property. When you create a new instance of this form It will
+    // show in the object inspector.
     property MyPublishedStringProperty: String read FMyPublishedStringProperty write FMyPublishedStringProperty;
   end;
 
