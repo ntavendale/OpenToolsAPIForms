@@ -8,7 +8,7 @@ uses
   MyCustomForm;
 
 type
-  // To Create tghe form the IDE must create both a Pascal Unit File (*.pas)
+  // To Create the form the IDE must create both a Pascal Unit File (*.pas)
   // and a Form file (*.dfm). To do this we need to implement the IOTAFile
   // interface seperately for each one.
   TBaseFile = class(TInterfacedObject)
@@ -30,16 +30,6 @@ type
   protected
     function GetSource: string;
     function GetAge: TDateTime;
-  end;
-
-  // We want our Own Gallery Category Called "Our Custom Forms"
-  // Under Delphi in the File->New->Other. To do this we implement
-  // IOTAGalleryCategory with the correct Parent Gallery.
-  TCustomGalleryCategory = class(TInterfacedObject, IOTAGalleryCategory)
-  public
-    function GetDisplayName: string;
-    function GetIDString: string;
-    function GetParent: IOTAGalleryCategory;
   end;
 
   TMyCustomFormWizardWizard = class(TInterfacedObject,
@@ -108,28 +98,8 @@ type
      procedure FormCreated(const FormEditor: IOTAFormEditor);
    end;
 
-procedure AddCategory;
-procedure RemoveCategory;
-
-// There only neds to be ioone instance of our IOTAGalleryCategory category implemntation
-// so we use a global variable which we add and remove through the Gallery Manager.
-// We will add it at registrion time and remove it in the finalization (when IDE
-// Closes or pacjage is uninstalled)
-var
-  FCategory: IOTAGalleryCategory = nil;
-
 implementation
 
-procedure AddCategory;
-begin
-  FCategory := TCustomGalleryCategory.Create;
-  (BorlandIDEServices as IOTAGalleryCategoryManager).AddCategory(FCategory.Parent, FCategory.IDString, FCategory.DisplayName, 0);
-end;
-
-procedure RemoveCategory;
-begin
-  (BorlandIDEServices as IOTAGalleryCategoryManager).DeleteCategory(FCategory);
-end;
 
 {$REGION 'TBaseFile'}
 constructor TBaseFile.Create(const ModuleName, FormName, AncestorName: string);
@@ -188,34 +158,6 @@ function TFormFile.GetAge: TDateTime;
 begin
   // Wee're crerating it brand new...
   Result := -1;
-end;
-{$ENDREGION}
-
-{$REGION 'TCustomGalleryCategory'}
-function TCustomGalleryCategory.GetDisplayName: String;
-begin
-  Result := 'Our Custom Forms';
-end;
-
-{$REGION 'TGalleryCategory'}
-function TCustomGalleryCategory.GetIDString: String;
-begin
-  Result := 'Borland.Delphi.OurCustomForms';
-end;
-
-function TCustomGalleryCategory.GetParent: IOTAGalleryCategory;
-var
-  LParent: IOTAGalleryCategory;
-begin
-   OutputDebugString(PChar('Find Parent ' + sCategoryDelphiWindows));
-  // There is not a constant for "InheritableItems" in ToolsApi.pas
-  LParent := (BorlandIDEServices as IOTAGalleryCategoryManager).FindCategory(sCategoryDelphiWindows);
-  if (nil = LParent) then
-  begin
-    OutputDebugString(PChar('Error Getting Parent ' + sCategoryRoot));
-    LParent := (BorlandIDEServices as IOTAGalleryCategoryManager).FindCategory(sCategoryDelphiNew);
-  end;
-  Result := LParent;
 end;
 {$ENDREGION}
 
@@ -304,12 +246,13 @@ end;
 
 function TMyCustomFormWizardWizard.GetPage: string;
 begin
-  // Seems to be an issue with just implmenting IOTARepositoryWizard
-  // GetPage is called but nothjing appears in the gallery.
-  // Need to implement IOTARepositoryWizard60 & IOTARepositoryWizard80
-  // If IOTARepositoryWizard80 implemented this method should never run.
+  // Need to implement IOTARepositoryWizard60 & IOTARepositoryWizard80!
+  // If implementation iof IOTARepositoryWizard80.GetGalleryCategory (below)
+  // returns a value this method won't be called.
+  // If it returns nil however, then the IDE will fall back on this method
+  // as a backup.
   OutputDebugString(PChar('Getting Page'));
-  Result := String.Empty;
+  Result := 'New';
 end;
 
 function TMyCustomFormWizardWizard.GetGlyph: Cardinal;
@@ -325,12 +268,26 @@ end;
 
 { TMyCustomFormWizardWizard.IOTARepositoryWizard80 }
 function TMyCustomFormWizardWizard.GetGalleryCategory: IOTAGalleryCategory;
+var
+  ACategoryManager: IOTAGalleryCategoryManager;
 begin
-  if nil = FCategory then
-    FCategory := TCustomGalleryCategory.Create;
-  var LMsg := String.Format('Getting Gallery Category: %s. ID: %s', [FCategory.DisplayName, FCategory.IDString]);
-  OutputDebugString(PChar(LMsg));
-  Result := FCategory;
+  // The comments in ToolsAPI.pas say that the Gallery Categories will (probably)
+  // exist, so they also might not. If sCategoryDelphiNewFiles doesn't exist in
+  // the IDE we are running under or the IOTAGalleryCategoryManager is not supported
+  // this method will return nil.
+  //
+  // In that event it will fall back to the GetPage method above which is part of
+  // the IOTARepositoryWizard60 interface implmentation.
+  // NOTE: We still must implemnt *both* interfaces for it to work in modern IDEs.
+
+  OutputDebugString(PChar('Get Gallery Category ' + sCategoryDelphiNewFiles));
+  if Supports(BorlandIDEServices, IOTAGalleryCategoryManager, ACategoryManager) then
+    Result := ACategoryManager.FindCategory(sCategoryDelphiNewFiles)
+  else
+    Result := nil;
+
+  if nil = Result then
+    OutputDebugString(PChar('Error Getting Gallery Category ' + sCategoryDelphiNewFiles));
 end;
 
 function TMyCustomFormWizardWizard.GetPersonality: String;

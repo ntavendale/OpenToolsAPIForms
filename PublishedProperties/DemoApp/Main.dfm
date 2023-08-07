@@ -11,4 +11,12 @@ object Form1: TForm1
   Font.Name = 'Segoe UI'
   Font.Style = []
   TextHeight = 15
+  object cxVerticalGrid1: TcxVerticalGrid
+    Left = 336
+    Top = 160
+    Width = 150
+    Height = 200
+    TabOrder = 0
+    Version = 1
+  end
 end

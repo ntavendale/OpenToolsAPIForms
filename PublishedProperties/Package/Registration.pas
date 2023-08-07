@@ -24,6 +24,9 @@ begin
   Application.Handle := (BIDES As IOTAServices).GetParentHandle;
 end;
 
+// In the package .bpl project options there is a Description secion.
+// Under Description it says "A Basic Form Example". This is how it will appear
+// in the Package manager when it is installed.
 procedure Register;
 var
   LWizard : TMyCustomFormWizardWizard;
@@ -34,7 +37,6 @@ begin
   // BorlandIDEServices is a global variable inmitilaized bu the Delphi/C++ builder IDE
   LWizard := InitialiseWizard(BorlandIDEServices);
   iWizard := (BorlandIDEServices As IOTAWizardServices).AddWizard(LWizard);
-  AddCategory;
 end;
 
 initialization
@@ -43,7 +45,4 @@ finalization
   // This code run when IDE Closes or package is uninstalled
   if iWizard > 0 Then
     (BorlandIDEServices As IOTAWizardServices).RemoveWizard(iWizard);
-  if nil <> FCategory then
-    RemoveCategory;
-
 end.

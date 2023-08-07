@@ -60,8 +60,7 @@ begin
     LStrings.Add('  end;');
     LStrings.Add('');
     LStrings.Add('var');
-    LStrings.Add('');
-    LStrings.Add('%1:s: T%1:s;');
+    LStrings.Add('  %1:s: T%1:s;');
     LStrings.Add('');
     LStrings.Add('implementation');
     LStrings.Add('');
