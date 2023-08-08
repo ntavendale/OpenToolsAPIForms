@@ -26,7 +26,6 @@ uses
 
 type
   TForm1 = class(TForm)
-    cxVerticalGrid1: TcxVerticalGrid;
   private
     { Private declarations }
   public

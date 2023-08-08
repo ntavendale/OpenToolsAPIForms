@@ -7,7 +7,7 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs;
 
 type
-  TfmMyCustomForm = class(TForm)
+  TMyCustomForm = class(TForm)
   private
     { Private declarations }
     FMyPublishedStringProperty: String;

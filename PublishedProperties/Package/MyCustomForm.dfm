@@ -1,4 +1,4 @@
-object fmMyCustomForm: TfmMyCustomForm
+object MyCustomForm: TMyCustomForm
   Left = 0
   Top = 0
   Caption = 'MyCustomForm'
@@ -10,7 +10,5 @@ object fmMyCustomForm: TfmMyCustomForm
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
-  OldCreateOrder = True
-  PixelsPerInch = 96
   TextHeight = 15
 end

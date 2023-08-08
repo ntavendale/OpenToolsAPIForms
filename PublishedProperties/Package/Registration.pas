@@ -31,8 +31,8 @@ procedure Register;
 var
   LWizard : TMyCustomFormWizardWizard;
 begin
-  RegisterNoIcon([TfmMyCustomForm]);
-  RegisterCustomModule(TfmMyCustomForm , TCustomModule);
+  RegisterNoIcon([TMyCustomForm]);
+  RegisterCustomModule(TMyCustomForm , TCustomModule);
 
   // BorlandIDEServices is a global variable inmitilaized bu the Delphi/C++ builder IDE
   LWizard := InitialiseWizard(BorlandIDEServices);

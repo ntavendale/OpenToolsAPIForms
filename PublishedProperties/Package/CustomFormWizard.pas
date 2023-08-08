@@ -42,7 +42,7 @@ type
                                     IOTARepositoryWizard60,
                                     IOTARepositoryWizard80,
                                     // IOTAFormWizard does nothing but must be present
-                                    // to let the IDE Services know tghis is a form wizard.
+                                    // to let the IDE Services know tgis is a form wizard.
                                     // All the methods we implement are on the IOTARepositoryWizard
                                     IOTAFormWizard,
                                     IOTACreator,
@@ -96,6 +96,9 @@ type
      function NewImplSource(const ModuleIdent, FormIdent, AncestorIdent: string): IOTAFile;
      function NewIntfSource(const ModuleIdent, FormIdent, AncestorIdent: string): IOTAFile;
      procedure FormCreated(const FormEditor: IOTAFormEditor);
+
+     // Use this to get currently
+     function GetCurrentProject: IOTAProject;
    end;
 
 implementation
@@ -198,7 +201,7 @@ end;
 
 function TMyCustomFormWizardWizard.GetName: string;
 begin
-  Result := 'fmMyCustomForm';
+  Result := 'New Custom Form';
 end;
 
 function TMyCustomFormWizardWizard.GetState: TWizardState;
@@ -216,13 +219,14 @@ begin
   // It l;ooks like theres a bug in GetNewModuleAndClassName. It's supposed to
   // fill in ClasName, FileName etc based on wht we feed it, but the strings
   // come back empty. Add checking.
+
   if String.IsNullOrWhitespace(LUnitIdent) then
-    LUnitIdent := String.Format('Unit%d', [(BorlandIDEServices as IOTAModuleServices).ModuleCount]);
+    LUnitIdent := 'CustomForm1';
   if String.IsNullOrWhitespace(LClassName) then
-    LClassName := 'fmMyCustomForm';
+    LClassName := 'fmMyCustomForm1';
 
   if String.IsNullOrWhitespace(LFileName) then
-    LFileName := 'MyCustomForm';
+    LFileName := 'MyCustomForm1';
 
   FUnitIdent := LUnitIdent;
   FClassName := LClassName;
@@ -327,12 +331,38 @@ begin
   begin
     Module := ModSErv.Modules[I];
     // find current project group
-    if (0 = CompareText(ExtractFileExt(Module.FileName), '.bpg')) and (S_OK = Module.QueryInterface(IOTAProjectGroup, ProjGrp)) then
+    OutputDebugString(PChar('Look For Owner [' + IntToStr(i) + ']: ' + Module.FileName));
+    if S_OK = Module.QueryInterface(IOTAProjectGroup, ProjGrp) then
     begin
-      // return active project of group
-      // which will be the owner of the newly created form
+      OutputDebugString(PChar('Found Project Gropup [' + IntToStr(i) + ']: ' + Module.FileName));
       Result := ProjGrp.GetActiveProject;
+      OutputDebugString(PChar('Found Owner: ' + Module.FileName));
       Exit;
+    end;
+  end;
+end;
+
+function TMyCustomFormWizardWizard.GetCurrentProject: IOTAProject;
+var
+  i: Integer;
+  ModServ: IOTAModuleServices;
+  ProjGrp: IOTAProjectGroup;
+begin
+  Result := nil;
+
+  if Supports(BorlandIDEServices, IOTAModuleServices, ModServ) then
+  begin
+    // ModServ.ModuleCount is the total count of modules across the *entire* project gropup
+    // We need to fund the active project
+    for i := 0 to ModServ.ModuleCount - 1 do
+    begin
+      ModSErv.Modules[i];
+      // find current project group
+      if S_OK = ModSErv.Modules[i].QueryInterface(IOTAProjectGroup, ProjGrp) then
+      begin
+        Result := ProjGrp.GetActiveProject;
+        Exit;
+      end;
     end;
   end;
 end;
@@ -345,18 +375,26 @@ end;
 { TAppBarWizard.IOTAModuleCreator }
 function TMyCustomFormWizardWizard.GetAncestorName: string;
 begin
-  Result := 'TfmMyCustomForm';
+  Result := 'TMyCustomForm';
 end;
 
 function TMyCustomFormWizardWizard.GetImplFileName: string;
 var
   CurrDir: array[0..MAX_PATH] of char;
   LImplFileName: String;
+  LCurrentProject: IOTAProject;
 begin
-  // Note: full path name required!
-  GetCurrentDirectory(SizeOf(CurrDir), CurrDir);
-  LImplFileName := String.Format('%s\%s.pas', [CurrDir, FUnitIdent, '.pas']);
-  OutputDebugString(PChar('ImplFileName: ' + LImplFileName));
+  LCurrentProject := GetCurrentProject;
+  if (nil <> LCurrentProject) and (LCurrentProject.ModuleFileCount > 0) then
+  begin
+    LImplFileName := String.Format('%s\%s.pas', [ExcludeTrailingPathDelimiter(ExtractFileDir(LCurrentProject.FileName)), FUnitIdent]);
+    OutputDebugString(PChar('ImplFileName: ' + LImplFileName));
+  end else
+  begin
+    // Note: full path name required!
+    LImplFileName := String.Format('%s\%s.pas', [CurrDir, FUnitIdent, '.pas']);
+    OutputDebugString(PChar('ImplFileName: ' + LImplFileName));
+  end;
   Result := LImplFileName;
 end;
 
@@ -387,12 +425,14 @@ end;
 
 function TMyCustomFormWizardWizard.NewFormFile(const FormIdent, AncestorIdent: string): IOTAFile;
 begin
+  OutputDebugString( PChar('TFormFile.Create('''', ''' + FormIdent +''', ''' + AncestorIdent + ''')') );
   Result := TFormFile.Create('', FormIdent, AncestorIdent);
 end;
 
 function TMyCustomFormWizardWizard.NewImplSource(const ModuleIdent, FormIdent,
 AncestorIdent: string): IOTAFile;
 begin
+  OutputDebugString( PChar('TUnitFile.Create(''' + ModuleIdent + ''', ''' + FormIdent +''', ''' + AncestorIdent + ''')') );
   Result := TUnitFile.Create(ModuleIdent, FormIdent, AncestorIdent);
 end;
 
