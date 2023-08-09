@@ -32,7 +32,7 @@ type
     function GetAge: TDateTime;
   end;
 
-  TMyCustomFormWizardWizard = class(TInterfacedObject,
+  TMyCustomFormWizard = class(TInterfacedObject,
                                     IOTANotifier,
                                     IOTAWizard,
                                     IOTARepositoryWizard,
@@ -51,6 +51,8 @@ type
     FUnitIdent: string;
     FClassName: string;
     FFileName: string;
+    // Use this to get current project
+    function GetCurrentActiveProject: IOTAProject;
    public
      { IOTNotifier implementation }
      procedure AfterSave;
@@ -96,9 +98,6 @@ type
      function NewImplSource(const ModuleIdent, FormIdent, AncestorIdent: string): IOTAFile;
      function NewIntfSource(const ModuleIdent, FormIdent, AncestorIdent: string): IOTAFile;
      procedure FormCreated(const FormEditor: IOTAFormEditor);
-
-     // Use this to get currently
-     function GetCurrentProject: IOTAProject;
    end;
 
 implementation
@@ -164,29 +163,56 @@ begin
 end;
 {$ENDREGION}
 
+{$REGION 'TMyCustomFormWizard'}
+function TMyCustomFormWizard.GetCurrentActiveProject: IOTAProject;
+var
+  i: Integer;
+  ModServ: IOTAModuleServices;
+  ProjGrp: IOTAProjectGroup;
+begin
+  Result := nil;
+
+  if Supports(BorlandIDEServices, IOTAModuleServices, ModServ) then
+  begin
+    // ModServ.ModuleCount is the total count of modules across the *entire* project gropup
+    // We need to fund the active project
+    for i := 0 to ModServ.ModuleCount - 1 do
+    begin
+      ModSErv.Modules[i];
+      // find current project group
+      if S_OK = ModSErv.Modules[i].QueryInterface(IOTAProjectGroup, ProjGrp) then
+      begin
+        // Return the active project
+        Result := ProjGrp.GetActiveProject;
+        Exit;
+      end;
+    end;
+  end;
+end;
+
 { TMyCustomFormWizardWizard.IOTANotifier }
-procedure TMyCustomFormWizardWizard.AfterSave;
+procedure TMyCustomFormWizard.AfterSave;
 begin
   // Do Nothing. Not called on Wizards.
   // We just need to have it since the interface
   // defines it.
 end;
 
-procedure TMyCustomFormWizardWizard.BeforeSave;
+procedure TMyCustomFormWizard.BeforeSave;
 begin
   // Do Nothing. Not called on Wizards.
   // We just need to have it since the interface
   // defines it.
 end;
 
-procedure TMyCustomFormWizardWizard.Destroyed;
+procedure TMyCustomFormWizard.Destroyed;
 begin
   // Do Nothing. Not called on Wizards.
   // We just need to have it since the interface
   // defines it.
 end;
 
-procedure TMyCustomFormWizardWizard.Modified;
+procedure TMyCustomFormWizard.Modified;
 begin
   // Do Nothing. Not called on Wizards.
   // We just need to have it since the interface
@@ -194,22 +220,22 @@ begin
 end;
 
 { TMyCustomFormWizardWizard.IOTAWizard }
-function TMyCustomFormWizardWizard.GetIDString: string;
+function TMyCustomFormWizard.GetIDString: string;
 begin
   Result := 'MyCustomFormWizard';
 end;
 
-function TMyCustomFormWizardWizard.GetName: string;
+function TMyCustomFormWizard.GetName: string;
 begin
   Result := 'New Custom Form';
 end;
 
-function TMyCustomFormWizardWizard.GetState: TWizardState;
+function TMyCustomFormWizard.GetState: TWizardState;
 begin
   Result := [wsEnabled];
 end;
 
-procedure TMyCustomFormWizardWizard.Execute;
+procedure TMyCustomFormWizard.Execute;
 var
   LUnitIdent, LClassName, LFileName : String;
 begin
@@ -238,17 +264,17 @@ begin
 end;
 
 { TMyCustomFormWizardWizard.IOTARepositoryWizard / TMyCustomFormWizardWizard.IOTAFormWizard }
-function TMyCustomFormWizardWizard.GetAuthor: string;
+function TMyCustomFormWizard.GetAuthor: String;
 begin
   Result := 'Me';
 end;
 
-function TMyCustomFormWizardWizard.GetComment: string;
+function TMyCustomFormWizard.GetComment: String;
 begin
   Result := 'The author is such a handsome fellow!';
 end;
 
-function TMyCustomFormWizardWizard.GetPage: string;
+function TMyCustomFormWizard.GetPage: String;
 begin
   // Need to implement IOTARepositoryWizard60 & IOTARepositoryWizard80!
   // If implementation iof IOTARepositoryWizard80.GetGalleryCategory (below)
@@ -259,19 +285,19 @@ begin
   Result := 'New';
 end;
 
-function TMyCustomFormWizardWizard.GetGlyph: Cardinal;
+function TMyCustomFormWizard.GetGlyph: Cardinal;
 begin
   Result := 0;
 end;
 
 { TMyCustomFormWizardWizard.IOTARepositoryWizard60 }
-function TMyCustomFormWizardWizard.GetDesigner: String;
+function TMyCustomFormWizard.GetDesigner: String;
 begin
   Result := dVCL;
 end;
 
 { TMyCustomFormWizardWizard.IOTARepositoryWizard80 }
-function TMyCustomFormWizardWizard.GetGalleryCategory: IOTAGalleryCategory;
+function TMyCustomFormWizard.GetGalleryCategory: IOTAGalleryCategory;
 var
   ACategoryManager: IOTAGalleryCategoryManager;
 begin
@@ -294,97 +320,50 @@ begin
     OutputDebugString(PChar('Error Getting Gallery Category ' + sCategoryDelphiNewFiles));
 end;
 
-function TMyCustomFormWizardWizard.GetPersonality: String;
+function TMyCustomFormWizard.GetPersonality: String;
 begin
   Result := sDelphiPersonality;
 end;
 
 { TMyCustomFormWizardWizard.IOTACreator }
-function TMyCustomFormWizardWizard.GetCreatorType: String;
+function TMyCustomFormWizard.GetCreatorType: String;
 begin
   Result := String.Empty;
 end;
 
-function TMyCustomFormWizardWizard.GetExisting: Boolean;
+function TMyCustomFormWizard.GetExisting: Boolean;
 begin
   Result := False;
 end;
 
-function TMyCustomFormWizardWizard.GetFileSystem: String;
+function TMyCustomFormWizard.GetFileSystem: String;
 begin
   Result := String.Empty;
 end;
 
-function TMyCustomFormWizardWizard.GetOwner: IOTAModule;
-var
-  i: Integer;
-  ModServ: IOTAModuleServices;
-  Module: IOTAModule;
-  ProjGrp: IOTAProjectGroup;
+function TMyCustomFormWizard.GetOwner: IOTAModule;
 begin
-  Result := nil;
-  ModServ := BorlandIDEServices as IOTAModuleServices;
-
-  // ModServ.ModuleCount is the total count of modules across the *entire* project gropup
-  // We need to fund the active project
-  for i := 0 to ModServ.ModuleCount - 1 do
-  begin
-    Module := ModSErv.Modules[I];
-    // find current project group
-    OutputDebugString(PChar('Look For Owner [' + IntToStr(i) + ']: ' + Module.FileName));
-    if S_OK = Module.QueryInterface(IOTAProjectGroup, ProjGrp) then
-    begin
-      OutputDebugString(PChar('Found Project Gropup [' + IntToStr(i) + ']: ' + Module.FileName));
-      Result := ProjGrp.GetActiveProject;
-      OutputDebugString(PChar('Found Owner: ' + Module.FileName));
-      Exit;
-    end;
-  end;
+  Result := GetCurrentActiveProject;
 end;
 
-function TMyCustomFormWizardWizard.GetCurrentProject: IOTAProject;
-var
-  i: Integer;
-  ModServ: IOTAModuleServices;
-  ProjGrp: IOTAProjectGroup;
-begin
-  Result := nil;
-
-  if Supports(BorlandIDEServices, IOTAModuleServices, ModServ) then
-  begin
-    // ModServ.ModuleCount is the total count of modules across the *entire* project gropup
-    // We need to fund the active project
-    for i := 0 to ModServ.ModuleCount - 1 do
-    begin
-      ModSErv.Modules[i];
-      // find current project group
-      if S_OK = ModSErv.Modules[i].QueryInterface(IOTAProjectGroup, ProjGrp) then
-      begin
-        Result := ProjGrp.GetActiveProject;
-        Exit;
-      end;
-    end;
-  end;
-end;
-
-function TMyCustomFormWizardWizard.GetUnnamed: Boolean;
+function TMyCustomFormWizard.GetUnnamed: Boolean;
 begin
   Result := True;
 end;
 
 { TAppBarWizard.IOTAModuleCreator }
-function TMyCustomFormWizardWizard.GetAncestorName: string;
+function TMyCustomFormWizard.GetAncestorName: string;
 begin
   Result := 'TMyCustomForm';
 end;
 
-function TMyCustomFormWizardWizard.GetImplFileName: string;
+function TMyCustomFormWizard.GetImplFileName: string;
 var
   CurrDir: array[0..MAX_PATH] of char;
   LImplFileName: String;
   LCurrentProject: IOTAProject;
 begin
-  LCurrentProject := GetCurrentProject;
+  LCurrentProject := GetCurrentActiveProject;
   if (nil <> LCurrentProject) and (LCurrentProject.ModuleFileCount > 0) then
   begin
     LImplFileName := String.Format('%s\%s.pas', [ExcludeTrailingPathDelimiter(ExtractFileDir(LCurrentProject.FileName)), FUnitIdent]);
@@ -398,50 +377,49 @@ begin
   Result := LImplFileName;
 end;
 
-function TMyCustomFormWizardWizard.GetIntfFileName: string;
+function TMyCustomFormWizard.GetIntfFileName: string;
 begin
   Result := String.Empty;
 end;
 
-function TMyCustomFormWizardWizard.GetFormName: string;
+function TMyCustomFormWizard.GetFormName: string;
 begin
   Result := FClassName;
 end;
 
-function TMyCustomFormWizardWizard.GetMainForm: Boolean;
+function TMyCustomFormWizard.GetMainForm: Boolean;
 begin
   Result := False;
 end;
 
-function TMyCustomFormWizardWizard.GetShowForm: Boolean;
+function TMyCustomFormWizard.GetShowForm: Boolean;
 begin
   Result := True;
 end;
 
-function TMyCustomFormWizardWizard.GetShowSource: Boolean;
+function TMyCustomFormWizard.GetShowSource: Boolean;
 begin
   Result := True;
 end;
 
-function TMyCustomFormWizardWizard.NewFormFile(const FormIdent, AncestorIdent: string): IOTAFile;
+function TMyCustomFormWizard.NewFormFile(const FormIdent, AncestorIdent: string): IOTAFile;
 begin
   OutputDebugString( PChar('TFormFile.Create('''', ''' + FormIdent +''', ''' + AncestorIdent + ''')') );
   Result := TFormFile.Create('', FormIdent, AncestorIdent);
 end;
 
-function TMyCustomFormWizardWizard.NewImplSource(const ModuleIdent, FormIdent,
-AncestorIdent: string): IOTAFile;
+function TMyCustomFormWizard.NewImplSource(const ModuleIdent, FormIdent, AncestorIdent: string): IOTAFile;
 begin
   OutputDebugString( PChar('TUnitFile.Create(''' + ModuleIdent + ''', ''' + FormIdent +''', ''' + AncestorIdent + ''')') );
   Result := TUnitFile.Create(ModuleIdent, FormIdent, AncestorIdent);
 end;
 
-function TMyCustomFormWizardWizard.NewIntfSource(const ModuleIdent, FormIdent, AncestorIdent: string): IOTAFile;
+function TMyCustomFormWizard.NewIntfSource(const ModuleIdent, FormIdent, AncestorIdent: string): IOTAFile;
 begin
   Result := nil;
 end;
 
-procedure TMyCustomFormWizardWizard.FormCreated(const FormEditor: IOTAFormEditor);
+procedure TMyCustomFormWizard.FormCreated(const FormEditor: IOTAFormEditor);
 begin
   // do nothing
 end;

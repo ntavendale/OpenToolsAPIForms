@@ -18,9 +18,9 @@ implementation
 var
   iWizard : Integer;
 
-function InitialiseWizard(BIDES : IBorlandIDEServices) : TMyCustomFormWizardWizard;
+function InitialiseWizard(BIDES : IBorlandIDEServices) : TMyCustomFormWizard;
 begin
-  Result := TMyCustomFormWizardWizard.Create;
+  Result := TMyCustomFormWizard.Create;
   Application.Handle := (BIDES As IOTAServices).GetParentHandle;
 end;
 
@@ -29,7 +29,7 @@ end;
 // in the Package manager when it is installed.
 procedure Register;
 var
-  LWizard : TMyCustomFormWizardWizard;
+  LWizard : TMyCustomFormWizard;
 begin
   RegisterNoIcon([TMyCustomForm]);
   RegisterCustomModule(TMyCustomForm , TCustomModule);
