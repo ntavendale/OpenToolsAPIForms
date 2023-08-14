@@ -5,6 +5,7 @@ interface
 uses
   System.SysUtils, System.Classes, Vcl.Forms, Vcl.Dialogs, WinApi.Windows,
   ToolsAPI, // Open Tools API Interface definitions
+  DesignWindows,
   MyCustomForm;
 
 type
@@ -54,7 +55,12 @@ type
     // Use this to get current project
     function GetCurrentActiveProject: IOTAProject;
    public
-     { IOTNotifier implementation }
+     { IOTNotifier implementation                                              }
+     { NOTE: ToolsAPI.pas contains a decalration for a TNotifierObject, which  }
+     {       provides a do nothing stub for these methods, so you could just   }
+     {       inherit from that instead of inheriting directly from             }
+     {       TInterfacedObject and implementing the IOTANotifier stub methods  }
+     {       yourself.                                                         }
      procedure AfterSave;
      procedure BeforeSave;
      procedure Destroyed;
@@ -242,7 +248,7 @@ begin
   (BorlandIDEServices as IOTAModuleServices).GetNewModuleAndClassName('fmMyCustomForm', LUnitIdent, LClassName, LFileName);
   OutputDebugString(PChar('GetNewModuleAndClassName: ModuleName: ' + LUnitIdent + ', FormName:' + LClassName + ', ' + 'FileName: ' + LFileName));
 
-  // It l;ooks like theres a bug in GetNewModuleAndClassName. It's supposed to
+  // It looks like theres a bug in GetNewModuleAndClassName. It's supposed to
   // fill in ClasName, FileName etc based on wht we feed it, but the strings
   // come back empty. Add checking.
 
@@ -371,10 +377,11 @@ begin
   end else
   begin
     // Note: full path name required!
-    LImplFileName := String.Format('%s\%s.pas', [CurrDir, FUnitIdent, '.pas']);
-    OutputDebugString(PChar('ImplFileName: ' + LImplFileName));
+    LImplFileName := '';//String.Format('%s\%s.pas', [CurrDir, FUnitIdent, '.pas']);
+    //OutputDebugString(PChar('ImplFileName: ' + LImplFileName));
   end;
-  Result := LImplFileName;
+  Result := String.Empty;
+  //Result := LImplFileName;
 end;
 
 function TMyCustomFormWizard.GetIntfFileName: string;
