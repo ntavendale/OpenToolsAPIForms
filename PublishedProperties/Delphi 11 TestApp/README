@@ -1,9 +1,9 @@
 There are two demo projects, a Delphi 10 and Delphi 11 project.
 
 The Delphi 10 project will work on Delphi 10, it doesn't use MyCustomForm or
-anything from the package. It will break on Delphi 11, so it isn't part of the
-Demos project group. This is because Opening it in D11 will automatically try
-to update it.
+anything from the package. It should break on Delphi 11, meaning OldCreateOrder
+will stop working.
 
-The Delphi 11 project will work on Delphi 11 with the package installed.
+The Delphi 11 project will work on Delphi 11 with the package installed and restore
+the OldCreateOrder behaviour.
 

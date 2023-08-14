@@ -12,6 +12,9 @@
         <Projects Include="PublishedProperties\Delphi 11 TestApp\TestAppOldCreateOrderDelphi11.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="PublishedProperties\Delphi 10 TestApp\TestAppOldCreateOrderDelphi10.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -47,14 +50,23 @@
     <Target Name="TestAppOldCreateOrderDelphi11:Make">
         <MSBuild Projects="PublishedProperties\Delphi 11 TestApp\TestAppOldCreateOrderDelphi11.dproj" Targets="Make"/>
     </Target>
+    <Target Name="TestAppOldCreateOrderDelphi10">
+        <MSBuild Projects="PublishedProperties\Delphi 10 TestApp\TestAppOldCreateOrderDelphi10.dproj"/>
+    </Target>
+    <Target Name="TestAppOldCreateOrderDelphi10:Clean">
+        <MSBuild Projects="PublishedProperties\Delphi 10 TestApp\TestAppOldCreateOrderDelphi10.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TestAppOldCreateOrderDelphi10:Make">
+        <MSBuild Projects="PublishedProperties\Delphi 10 TestApp\TestAppOldCreateOrderDelphi10.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="OADemoPackage;PropertiesApp;TestAppOldCreateOrderDelphi11"/>
+        <CallTarget Targets="OADemoPackage;PropertiesApp;TestAppOldCreateOrderDelphi11;TestAppOldCreateOrderDelphi10"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="OADemoPackage:Clean;PropertiesApp:Clean;TestAppOldCreateOrderDelphi11:Clean"/>
+        <CallTarget Targets="OADemoPackage:Clean;PropertiesApp:Clean;TestAppOldCreateOrderDelphi11:Clean;TestAppOldCreateOrderDelphi10:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="OADemoPackage:Make;PropertiesApp:Make;TestAppOldCreateOrderDelphi11:Make"/>
+        <CallTarget Targets="OADemoPackage:Make;PropertiesApp:Make;TestAppOldCreateOrderDelphi11:Make;TestAppOldCreateOrderDelphi10:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
