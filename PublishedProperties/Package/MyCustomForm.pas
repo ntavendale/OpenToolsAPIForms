@@ -191,9 +191,18 @@ end;
 
 procedure TMyCustomForm.BeforeDestruction;
 begin
-  inherited;
+  //inherited; <----- remove this call
+
+  GlobalNameSpace.BeginWrite;
+  Destroying;
+  Screen.SaveFocusedList.Remove(Self);
+  RemoveFixupReferences(Self, '');
+  if OleFormObject <> nil then OleFormObject.OnDestroy;
+  if (FormStyle <> fsMDIChild) and not (fsShowing in FFormState) then Hide;
+  //Only call DoDestroy if not OldCreateOrder
   if not OldCreateOrder then
     DoDestroy;
+  //else it is called in TMyCustomForm.Destroy
 end;
 
 procedure TMyCustomForm.CallAncestorDestroy;
