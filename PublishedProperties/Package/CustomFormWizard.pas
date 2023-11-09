@@ -126,6 +126,7 @@ var
 begin
   LPasFileText := GetMyCustomFormPasFileText;
   try
+    OutputDebugString(PChar('TUnitFile.GetSource: ModuleName:' + FModuleName + ', FormName: ' + FFormName +', AncestorName' + FAncestorName));
     LPasFileText := String.Format(LPasFileText, [FModuleName, FFormName, FAncestorName]);
   except
     on E:Exception do
@@ -244,29 +245,33 @@ end;
 procedure TMyCustomFormWizard.Execute;
 var
   LUnitIdent, LClassName, LFileName : String;
+  ModSvc: IOTAModuleServices;
 begin
-  (BorlandIDEServices as IOTAModuleServices).GetNewModuleAndClassName('fmMyCustomForm', LUnitIdent, LClassName, LFileName);
-  OutputDebugString(PChar('GetNewModuleAndClassName: ModuleName: ' + LUnitIdent + ', FormName:' + LClassName + ', ' + 'FileName: ' + LFileName));
+  if Supports(BorlandIDEServices, IOTAModuleServices, ModSvc) then
+  begin
+    ModSvc.GetNewModuleAndClassName('fmMyCustomForm', LUnitIdent, LClassName, LFileName);
+    OutputDebugString(PChar('GetNewModuleAndClassName: ModuleName: ' + LUnitIdent + ', FormName:' + LClassName + ', ' + 'FileName: ' + LFileName));
 
-  // It looks like theres a bug in GetNewModuleAndClassName. It's supposed to
-  // fill in ClasName, FileName etc based on wht we feed it, but the strings
-  // come back empty. Add checking.
+    // It looks like theres a bug in GetNewModuleAndClassName. It's supposed to
+    // fill in ClasName, FileName etc based on what we feed it, but the strings
+    // come back empty. Add checking.
 
-  if String.IsNullOrWhitespace(LUnitIdent) then
-    LUnitIdent := 'CustomForm1';
-  if String.IsNullOrWhitespace(LClassName) then
-    LClassName := 'fmMyCustomForm1';
+    if String.IsNullOrWhitespace(LUnitIdent) then
+      LUnitIdent := 'Unit1';
+    if String.IsNullOrWhitespace(LClassName) then
+      LClassName := 'fmMyCustomForm1';
 
-  if String.IsNullOrWhitespace(LFileName) then
-    LFileName := 'MyCustomForm1';
+    if String.IsNullOrWhitespace(LFileName) then
+      LFileName := 'MyCustomForm1';
 
-  FUnitIdent := LUnitIdent;
-  FClassName := LClassName;
-  FFileName := LFileName;
+    FUnitIdent := LUnitIdent;
+    FClassName := LClassName;
+    FFileName := LFileName;
 
-  OutputDebugString(PChar('GetNewModuleAndClassName: ModuleName: ' + FUnitIdent + ', FormName:' + FClassName + ', ' + 'FileName: ' + FFileName));
+    OutputDebugString(PChar('GetNewModuleAndClassName: ModuleName: ' + FUnitIdent + ', FormName:' + FClassName + ', ' + 'FileName: ' + FFileName));
 
-  (BorlandIDEServices as IOTAModuleServices).CreateModule(Self);
+    ModSvc.CreateModule(Self);
+  end;
 end;
 
 { TMyCustomFormWizardWizard.IOTARepositoryWizard / TMyCustomFormWizardWizard.IOTAFormWizard }
@@ -354,7 +359,7 @@ end;
 
 function TMyCustomFormWizard.GetUnnamed: Boolean;
 begin
-  Result := True;
+  Result := TRUE;
 end;
 
 { TAppBarWizard.IOTAModuleCreator }
@@ -380,8 +385,8 @@ begin
     LImplFileName := '';//String.Format('%s\%s.pas', [CurrDir, FUnitIdent, '.pas']);
     //OutputDebugString(PChar('ImplFileName: ' + LImplFileName));
   end;
-  Result := String.Empty;
-  //Result := LImplFileName;
+  //Result := String.Empty;
+  Result := LImplFileName;
 end;
 
 function TMyCustomFormWizard.GetIntfFileName: string;
@@ -391,6 +396,7 @@ end;
 
 function TMyCustomFormWizard.GetFormName: string;
 begin
+  OutputDebugString(PChar('GetFormName: ' + FClassName));
   Result := FClassName;
 end;
 
@@ -416,8 +422,13 @@ begin
 end;
 
 function TMyCustomFormWizard.NewImplSource(const ModuleIdent, FormIdent, AncestorIdent: string): IOTAFile;
+var
+  LModule: String;
 begin
-  OutputDebugString( PChar('TUnitFile.Create(''' + ModuleIdent + ''', ''' + FormIdent +''', ''' + AncestorIdent + ''')') );
+  if String.IsNullorWhitespace(ModuleIdent) then
+    OutputDebugString( PChar('TUnitFile.Create(String.Empty, ''' + FormIdent +''', ''' + AncestorIdent + ''')') )
+  else
+    OutputDebugString( PChar('TUnitFile.Create(''' + ModuleIdent + ''', ''' + FormIdent +''', ''' + AncestorIdent + ''')') );
   Result := TUnitFile.Create(ModuleIdent, FormIdent, AncestorIdent);
 end;
 

@@ -16,12 +16,18 @@ Procedure Register;
 implementation
 
 var
-  iWizard : Integer;
+  FWizardIndex : Integer = -1;
 
 function InitialiseWizard(BIDES : IBorlandIDEServices) : TMyCustomFormWizard;
+var
+  Svc: IOTAServices;
 begin
-  Result := TMyCustomFormWizard.Create;
-  Application.Handle := (BIDES As IOTAServices).GetParentHandle;
+  Result := nil;
+  if Supports(BIDES, IOTAServices, Svc) then
+  begin
+    Result := TMyCustomFormWizard.Create;
+    Application.Handle := Svc.GetParentHandle;
+  end;
 end;
 
 // In the package .bpl project options there is a Description secion.
@@ -30,19 +36,24 @@ end;
 procedure Register;
 var
   LWizard : TMyCustomFormWizard;
+  WizardSvc: IOTAWizardServices;
 begin
   RegisterNoIcon([TMyCustomForm]);
   RegisterCustomModule(TMyCustomForm , TCustomModule);
 
   // BorlandIDEServices is a global variable inmitilaized bu the Delphi/C++ builder IDE
-  LWizard := InitialiseWizard(BorlandIDEServices);
-  iWizard := (BorlandIDEServices As IOTAWizardServices).AddWizard(LWizard);
+  if Supports(BorlandIDEServices, IOTAWizardServices, WizardSvc) then
+  begin
+    LWizard := InitialiseWizard(BorlandIDEServices);
+    if nil <> LWizard then
+      FWizardIndex := WizardSvc.AddWizard(LWizard);
+  end;
 end;
 
 initialization
 
 finalization
   // This code run when IDE Closes or package is uninstalled
-  if iWizard > 0 Then
-    (BorlandIDEServices As IOTAWizardServices).RemoveWizard(iWizard);
+  if FWizardIndex > 0 then
+    (BorlandIDEServices As IOTAWizardServices).RemoveWizard(FWizardIndex);
 end.

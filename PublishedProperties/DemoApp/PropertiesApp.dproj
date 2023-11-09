@@ -88,7 +88,6 @@
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -107,8 +106,8 @@
             <Form>Form1</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="CustomFrm.pas">
-            <Form>fmNewCustom</Form>
+        <DCCReference Include="AppCustomForm.pas">
+            <Form>fmAppCustomForm</Form>
             <FormType>dfm</FormType>
             <DesignClass>TMyCustomForm</DesignClass>
         </DCCReference>
